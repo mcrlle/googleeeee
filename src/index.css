@@ -1,0 +1,283 @@
+@import "tailwindcss";
+
+:root {
+  --g-blue: #4285F4;
+  --g-red: #EA4335;
+  --g-yellow: #FBBC05;
+  --g-green: #34A853;
+  --g-dark: #202124;
+  --g-gray: #5F6368;
+  --g-card: #F3F4F6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  color: var(--g-dark);
+}
+
+/* Viewport wrapper that scales the 16:9 stage to the entire screen */
+#viewport {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fixed 1280x720 (16:9) Virtual Stage scaled uniformly by JS */
+#stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  background-color: #FFFFFF;
+  overflow: hidden;
+  transform-origin: center center;
+  flex-shrink: 0;
+}
+
+/* Minimalist 3px Top Progress Bar with the 4 Google Colors - directly locked to stage */
+#top-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  z-index: 100;
+  background: linear-gradient(
+    90deg,
+    var(--g-blue) 0%,
+    var(--g-blue) 25%,
+    var(--g-red) 25%,
+    var(--g-red) 50%,
+    var(--g-yellow) 50%,
+    var(--g-yellow) 75%,
+    var(--g-green) 75%,
+    var(--g-green) 100%
+  );
+  transition: width 0.05s linear;
+}
+
+/* Master Scene Layout */
+.scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 720px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(14px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scene.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.font-display {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* 3D Word Flip without overflow clipping */
+.word-rotator {
+  display: inline-grid;
+  grid-template-areas: "slot";
+  align-items: center;
+  justify-items: start;
+  perspective: 900px;
+  overflow: visible;
+}
+
+.rotator-word {
+  grid-area: slot;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  backface-visibility: hidden;
+  transform-origin: 50% 50%;
+  transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+  overflow: visible;
+}
+
+.rotator-word.state-visible {
+  opacity: 1;
+  transform: translateY(0) rotateX(0deg);
+}
+
+.rotator-word.state-above {
+  opacity: 0;
+  transform: translateY(-55%) rotateX(75deg);
+}
+
+.rotator-word.state-below {
+  opacity: 0;
+  transform: translateY(55%) rotateX(-75deg);
+}
+
+.gemini-gradient {
+  background: linear-gradient(90deg, #4285F4 0%, #9B72CB 52%, #D96570 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Scene 2: Yellow Rectangular Highlight */
+.yellow-bar {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.yellow-bar::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  right: -14px;
+  bottom: 2px;
+  height: 58%;
+  background-color: var(--g-yellow);
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+}
+
+.scene.active .yellow-bar::before {
+  transform: scaleX(1);
+}
+
+/* SVG Line Drawing Animation */
+.draw-stroke {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+
+.scene.active .draw-stroke {
+  stroke-dashoffset: 0;
+}
+
+/* Staggered Entrance Animations */
+.stagger-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scene.active .delay-1 { opacity: 1; transform: translateY(0); transition-delay: 0.14s; }
+.scene.active .delay-2 { opacity: 1; transform: translateY(0); transition-delay: 0.30s; }
+.scene.active .delay-3 { opacity: 1; transform: translateY(0); transition-delay: 0.46s; }
+.scene.active .delay-4 { opacity: 1; transform: translateY(0); transition-delay: 0.62s; }
+
+/* Scene 3: Wave Arcs */
+.arc-draw {
+  stroke-dasharray: 360;
+  stroke-dashoffset: 360;
+  transition: stroke-dashoffset 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scene.active .arc-1 { stroke-dashoffset: 0; transition-delay: 0.10s; }
+.scene.active .arc-2 { stroke-dashoffset: 0; transition-delay: 0.45s; }
+.scene.active .arc-3 { stroke-dashoffset: 0; transition-delay: 0.80s; }
+.scene.active .arc-4 { stroke-dashoffset: 0; transition-delay: 1.15s; }
+
+/* Grid Paper Background matching image.png */
+.workspace-grid {
+  background-image: 
+    linear-gradient(to right, #ECEFF1 1px, transparent 1px),
+    linear-gradient(to bottom, #ECEFF1 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* App Cards Staggered Pop-In */
+.app-card-pop {
+  opacity: 0;
+  transform: translateY(24px) scale(0.92);
+  transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.app-card-pop.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Pulse animation for connector hint */
+@keyframes softPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.pulse-hint {
+  animation: softPulse 2.8s ease-in-out infinite;
+}
+
+/* Momento 4 Google Workspace Corner Accents */
+.ribbon-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s,
+              opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+
+.scene.active .ribbon-left {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.ribbon-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s,
+              opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+
+.scene.active .ribbon-right {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Google Search Bar */
+.google-search-bar {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.google-search-bar:hover {
+  box-shadow: 0 4px 16px rgba(32, 33, 36, 0.12), 0 1px 4px rgba(32, 33, 36, 0.08) !important;
+  border-color: #D2D5DA !important;
+  transform: translateY(-1px);
+}
+
+/* Google Search Bar Cursor */
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.search-cursor {
+  animation: blinkCursor 1s steps(2, start) infinite;
+}
+
